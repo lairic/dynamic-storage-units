@@ -427,6 +427,7 @@ class DSU_Admin {
 			'address_country'  => sanitize_text_field( $input['address_country'] ?? 'US' ),
 			'latitude'         => sanitize_text_field( $input['latitude'] ?? '' ),
 			'longitude'        => sanitize_text_field( $input['longitude'] ?? '' ),
+			'service_radius'   => absint( $input['service_radius'] ?? 0 ) ?: '',
 			'hours'            => $hours,
 			'payment_accepted' => $payment_accepted,
 			'schema_id'        => esc_url_raw( $input['schema_id'] ?? '' ),
@@ -834,12 +835,26 @@ class DSU_Admin {
 	}
 
 	public function sanitize_source_map( $input ) {
-		$current = get_option( DSU_OPTION_SOURCE_MAP, [] );
+		$raw_sources = $input['lead_sources'] ?? null;
+
+		if ( ! empty( $raw_sources ) && is_array( $raw_sources ) ) {
+			$lead_sources = array_values( array_filter( array_map( function( $s ) {
+				if ( ! is_array( $s ) ) {
+					return null;
+				}
+				$id   = sanitize_text_field( $s['id']   ?? '' );
+				$name = sanitize_text_field( $s['name'] ?? '' );
+				return ( $id && $name ) ? compact( 'id', 'name' ) : null;
+			}, $raw_sources ) ) );
+		} else {
+			// No sources submitted — preserve whatever is already in the DB.
+			$current      = get_option( DSU_OPTION_SOURCE_MAP, [] );
+			$lead_sources = $current['lead_sources'] ?? [];
+		}
+
 		return [
 			'fallback_id'  => sanitize_text_field( $input['fallback_id'] ?? '' ),
-			// When the AJAX saves a fresh list, honour it. When the settings form saves
-			// (which has no lead_sources field), fall back to the existing DB value.
-			'lead_sources' => ! empty( $input['lead_sources'] ) ? $input['lead_sources'] : ( $current['lead_sources'] ?? [] ),
+			'lead_sources' => $lead_sources,
 		];
 	}
 

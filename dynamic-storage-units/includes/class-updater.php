@@ -14,6 +14,7 @@ class DSU_Updater {
 
 		add_filter( 'pre_set_site_transient_update_plugins', [ $this, 'check_for_update' ] );
 		add_filter( 'plugins_api', [ $this, 'plugin_info' ], 10, 3 );
+		add_action( 'upgrader_process_complete', [ $this, 'clear_update_transient' ], 10, 2 );
 	}
 
 	/** Injects update data into WordPress's plugin update transient. */
@@ -22,24 +23,29 @@ class DSU_Updater {
 			return $transient;
 		}
 
-		$update = $this->fetch_update_data();
-		if ( ! $update ) {
-			return $transient;
+		$installed = $transient->checked[ $this->plugin_slug ] ?? DSU_VERSION;
+		$update    = $this->fetch_update_data();
+
+		// No data, license error, or server says already current — clear any stale entry.
+		if ( ! $update || isset( $update['no_update'] ) ) {
+			return $this->mark_current( $transient, $installed );
 		}
 
-		if ( isset( $update['no_update'] ) ) {
-			return $transient;
+		// Belt-and-suspenders: verify locally that the server version is actually newer.
+		// Guards against stale cached responses that claim the same version is "new".
+		if ( ! version_compare( $update['version'], $installed, '>' ) ) {
+			return $this->mark_current( $transient, $installed );
 		}
 
 		$transient->response[ $this->plugin_slug ] = (object) [
-			'slug'        => 'dynamic-storage-units',
-			'plugin'      => $this->plugin_slug,
-			'new_version' => $update['version'],
-			'url'         => $update['author_homepage'] ?? DSU_LICENSE_SERVER,
-			'package'     => $update['download_url'],
-			'requires'    => $update['requires']     ?? '6.0',
-			'requires_php'=> $update['requires_php'] ?? '7.4',
-			'tested'      => $update['tested']       ?? $update['version'],
+			'slug'         => 'dynamic-storage-units',
+			'plugin'       => $this->plugin_slug,
+			'new_version'  => $update['version'],
+			'url'          => $update['author_homepage'] ?? DSU_LICENSE_SERVER,
+			'package'      => $update['download_url'],
+			'requires'     => $update['requires']      ?? '6.0',
+			'requires_php' => $update['requires_php']  ?? '7.4',
+			'tested'       => $update['tested']        ?? $update['version'],
 		];
 
 		return $transient;
@@ -75,7 +81,33 @@ class DSU_Updater {
 		];
 	}
 
+	/** Clears our cached update response when this plugin is updated. */
+	public function clear_update_transient( $upgrader, $hook_extra ) {
+		$plugins = $hook_extra['plugins'] ?? [];
+		if ( in_array( $this->plugin_slug, (array) $plugins, true ) ) {
+			delete_transient( 'dsu_update_check' );
+		}
+	}
+
 	// ── Internal ─────────────────────────────────────────────────
+
+	/** Marks the plugin as current in the transient, clearing any stale update entry. */
+	private function mark_current( $transient, $installed_version ) {
+		unset( $transient->response[ $this->plugin_slug ] );
+
+		if ( ! isset( $transient->no_update ) ) {
+			$transient->no_update = [];
+		}
+		$transient->no_update[ $this->plugin_slug ] = (object) [
+			'slug'        => 'dynamic-storage-units',
+			'plugin'      => $this->plugin_slug,
+			'new_version' => $installed_version,
+			'url'         => DSU_LICENSE_SERVER,
+			'package'     => '',
+		];
+
+		return $transient;
+	}
 
 	private function fetch_update_data() {
 		$transient_key = 'dsu_update_check';

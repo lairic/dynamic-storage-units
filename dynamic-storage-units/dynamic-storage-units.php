@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Dynamic Storage Units
  * Description: API-driven storage unit listings with WordPress controlled presentation brought to you by Metric Moose.
- * Version: 2.6.3
+ * Version: 2.6.6
  * Author: Metric Moose
  * Author URI: https://metricmoose.com
  * Text Domain: dynamic-storage-units
@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'DSU_VERSION', '2.6.3' );
+define( 'DSU_VERSION', '2.6.6' );
 define( 'DSU_LICENSE_SERVER', 'https://dsu-license-server.vercel.app' );
 define( 'DSU_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'DSU_PLUGIN_URL', plugin_dir_url( __FILE__ ) );

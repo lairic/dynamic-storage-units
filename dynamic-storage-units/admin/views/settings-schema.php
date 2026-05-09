@@ -113,7 +113,7 @@
 			<th scope="row"><label for="dsu_schema_postal_code"><?php esc_html_e( 'Postal Code', 'dynamic-storage-units' ); ?></label></th>
 			<td>
 				<input type="text" id="dsu_schema_postal_code" name="<?php echo DSU_OPTION_SCHEMA; ?>[postal_code]"
-				       value="<?php echo esc_attr( $s['postal_code'] ?? '' ); ?>" class="small-text" />
+				       value="<?php echo esc_attr( $s['postal_code'] ?? '' ); ?>" style="width:120px;" />
 			</td>
 		</tr>
 		<tr>
@@ -132,7 +132,7 @@
 			<th scope="row"><label for="dsu_schema_latitude"><?php esc_html_e( 'Latitude', 'dynamic-storage-units' ); ?></label></th>
 			<td>
 				<input type="text" id="dsu_schema_latitude" name="<?php echo DSU_OPTION_SCHEMA; ?>[latitude]"
-				       value="<?php echo esc_attr( $s['latitude'] ?? '' ); ?>" class="small-text"
+				       value="<?php echo esc_attr( $s['latitude'] ?? '' ); ?>" style="width:150px;"
 				       placeholder="41.8827" />
 			</td>
 		</tr>
@@ -140,8 +140,17 @@
 			<th scope="row"><label for="dsu_schema_longitude"><?php esc_html_e( 'Longitude', 'dynamic-storage-units' ); ?></label></th>
 			<td>
 				<input type="text" id="dsu_schema_longitude" name="<?php echo DSU_OPTION_SCHEMA; ?>[longitude]"
-				       value="<?php echo esc_attr( $s['longitude'] ?? '' ); ?>" class="small-text"
+				       value="<?php echo esc_attr( $s['longitude'] ?? '' ); ?>" style="width:150px;"
 				       placeholder="-87.6233" />
+			</td>
+		</tr>
+		<tr>
+			<th scope="row"><label for="dsu_schema_service_radius"><?php esc_html_e( 'Service Radius (miles)', 'dynamic-storage-units' ); ?></label></th>
+			<td>
+				<input type="number" id="dsu_schema_service_radius" name="<?php echo DSU_OPTION_SCHEMA; ?>[service_radius]"
+				       value="<?php echo esc_attr( $s['service_radius'] ?? '' ); ?>" class="small-text"
+				       placeholder="10" min="1" step="1" />
+				<p class="description"><?php esc_html_e( 'Sets the areaServed GeoCircle radius. The midpoint is always the facility coordinates above. Leave blank to omit areaServed from the schema.', 'dynamic-storage-units' ); ?></p>
 			</td>
 		</tr>
 

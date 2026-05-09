@@ -165,6 +165,23 @@ class DSU_Schema {
 				'latitude'  => (float) $lat,
 				'longitude' => (float) $lng,
 			];
+
+			$service_radius = absint( $settings['service_radius'] ?? 0 );
+			if ( $service_radius > 0 ) {
+				$schema['areaServed'] = [
+					'@type'       => 'GeoCircle',
+					'geoMidpoint' => [
+						'@type'     => 'GeoCoordinates',
+						'latitude'  => (float) $lat,
+						'longitude' => (float) $lng,
+					],
+					'geoRadius'   => [
+						'@type'    => 'QuantitativeValue',
+						'value'    => $service_radius,
+						'unitCode' => 'SMI',
+					],
+				];
+			}
 		}
 
 		$hours = $this->build_opening_hours( $settings['hours'] ?? [] );

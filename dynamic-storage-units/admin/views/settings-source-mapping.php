@@ -17,6 +17,17 @@ $fallback_id  = $saved['fallback_id']  ?? '';
 <form method="post" action="options.php" style="margin-top:28px;max-width:580px;">
 	<?php settings_fields( 'dsu_source_map_group' ); ?>
 
+	<!-- Hidden inputs carry lead_sources through the form POST so the sanitize
+	     callback always receives them — no need to fall back to get_option(). -->
+	<div id="dsu-lead-sources-hidden">
+		<?php foreach ( $lead_sources as $i => $source ) : ?>
+		<input type="hidden" name="<?php echo esc_attr( DSU_OPTION_SOURCE_MAP . '[lead_sources][' . $i . '][id]' ); ?>"
+		       value="<?php echo esc_attr( $source['id'] ); ?>" />
+		<input type="hidden" name="<?php echo esc_attr( DSU_OPTION_SOURCE_MAP . '[lead_sources][' . $i . '][name]' ); ?>"
+		       value="<?php echo esc_attr( $source['name'] ); ?>" />
+		<?php endforeach; ?>
+	</div>
+
 	<table class="form-table" style="max-width:580px;">
 		<tr>
 			<th scope="row" style="width:200px;">
@@ -60,7 +71,25 @@ $fallback_id  = $saved['fallback_id']  ?? '';
 jQuery(function ($) {
 	var ajaxUrl      = <?php echo wp_json_encode( admin_url( 'admin-ajax.php' ) ); ?>;
 	var nonce        = <?php echo wp_json_encode( wp_create_nonce( 'dsu_admin_nonce' ) ); ?>;
+	var optPrefix    = <?php echo wp_json_encode( DSU_OPTION_SOURCE_MAP ); ?>;
 	var savedFallback = <?php echo wp_json_encode( $fallback_id ); ?>;
+
+	function escAttr(s) {
+		return String(s)
+			.replace(/&/g, '&amp;')
+			.replace(/"/g, '&quot;')
+			.replace(/</g, '&lt;')
+			.replace(/>/g, '&gt;');
+	}
+
+	function rebuildHidden(sources) {
+		var $hidden = $('#dsu-lead-sources-hidden');
+		$hidden.empty();
+		$.each(sources, function (i, s) {
+			$hidden.append('<input type="hidden" name="' + optPrefix + '[lead_sources][' + i + '][id]" value="' + escAttr(s.id) + '">');
+			$hidden.append('<input type="hidden" name="' + optPrefix + '[lead_sources][' + i + '][name]" value="' + escAttr(s.name) + '">');
+		});
+	}
 
 	$('#dsu-refresh-lead-sources').on('click', function () {
 		var $btn    = $(this);
@@ -88,7 +117,10 @@ jQuery(function ($) {
 			var sources = res.data.sources || [];
 			var $select = $('#dsu-fallback-select');
 
-			// Rebuild options, preserving the current selection
+			// Rebuild the hidden inputs so the form POST carries the fresh list
+			rebuildHidden(sources);
+
+			// Rebuild select options, preserving the current selection
 			var currentVal = $select.val();
 			$select.find('option:not(:first)').remove();
 			$.each(sources, function (_, s) {
