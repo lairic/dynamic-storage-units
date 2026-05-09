@@ -834,11 +834,12 @@ class DSU_Admin {
 	}
 
 	public function sanitize_source_map( $input ) {
-		// Preserve the cached lead_sources list when saving fallback_id via settings form
 		$current = get_option( DSU_OPTION_SOURCE_MAP, [] );
 		return [
 			'fallback_id'  => sanitize_text_field( $input['fallback_id'] ?? '' ),
-			'lead_sources' => $current['lead_sources'] ?? [],
+			// When the AJAX saves a fresh list, honour it. When the settings form saves
+			// (which has no lead_sources field), fall back to the existing DB value.
+			'lead_sources' => ! empty( $input['lead_sources'] ) ? $input['lead_sources'] : ( $current['lead_sources'] ?? [] ),
 		];
 	}
 
