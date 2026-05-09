@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir -p \"C:\\\\Users\\\\April\\\\Documents\\\\Claude\\\\Projects\\\\qms-wordpress-plugin\\\\dynamic-storage-units\\\\includes\")",
+      "Bash(mkdir -p \"C:\\\\Users\\\\April\\\\Documents\\\\Claude\\\\Projects\\\\qms-wordpress-plugin\\\\dynamic-storage-units\\\\admin\\\\views\")",
+      "Bash(mkdir -p \"C:\\\\Users\\\\April\\\\Documents\\\\Claude\\\\Projects\\\\qms-wordpress-plugin\\\\dynamic-storage-units\\\\assets\\\\css\")",
+      "Bash(mkdir -p \"C:\\\\Users\\\\April\\\\Documents\\\\Claude\\\\Projects\\\\qms-wordpress-plugin\\\\dynamic-storage-units\\\\assets\\\\js\")",
+      "Bash(mkdir -p \"C:\\\\Users\\\\April\\\\Documents\\\\Claude\\\\Projects\\\\qms-wordpress-plugin\\\\dynamic-storage-units\\\\templates\")",
+      "Bash(powershell *)",
+      "WebFetch(domain:valleycenterstorageunits.com)",
+      "Bash(curl -s \"https://valleycenterstorageunits.com/unit-listing/\")",
+      "Bash(python -c ' *)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\April\\\\Documents\\\\Claude\\\\Projects\\\\qms-wordpress-plugin\" -Recurse -File)",
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(python *)"
+    ]
+  }
+}

@@ -1,0 +1,1303 @@
+/* Dynamic Storage Units – Frontend */
+
+:root {
+	--dsu-primary:        #1a73e8;
+	--dsu-secondary:      #1a73e8;
+	--dsu-primary-text:   #ffffff;
+	--dsu-secondary-text: #ffffff;
+
+	/* Promo bar — yellow defaults; overridden via admin color picker */
+	--dsu-promo-bg:           #fffbea;
+	--dsu-promo-bg-hover:     #fff5c2;
+	--dsu-promo-bg-active:    #ffeda0;
+	--dsu-promo-border:       #d4a900;
+	--dsu-promo-border-hover: #a88000;
+	--dsu-promo-text:         #7a5800;
+}
+
+/* ---- Root wrapper ---- */
+/* Prevents theme flex/grid containers from treating inner elements as siblings */
+.dsu-wrap {
+	display: block;
+	width: 100%;
+	min-width: 0;
+	box-sizing: border-box;
+	overflow: hidden;
+}
+
+.dsu-wrap * {
+	box-sizing: border-box;
+}
+
+/* ---- Grid layout ---- */
+.dsu-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+	gap: 24px;
+	padding: 16px 0;
+	width: 100%;
+}
+
+/* ---- List layout container ---- */
+.dsu-grid--list {
+	grid-template-columns: 1fr;
+	gap: 16px;
+	container-type: inline-size;
+}
+
+/* ========================================
+   GRID CARD
+======================================== */
+
+.dsu-unit-card {
+	background: #fff;
+	border-radius: 10px;
+	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+	overflow: hidden;
+	display: flex;
+	flex-direction: column;
+	transition: transform 0.2s ease, box-shadow 0.2s ease;
+	min-width: 0;
+}
+
+.dsu-unit-card:hover {
+	transform: translateY(-4px);
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.dsu-card-image {
+	overflow: hidden;
+	background: #f5f5f5;
+	aspect-ratio: 16 / 9;
+}
+
+.dsu-card-image img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+}
+
+.dsu-card-body {
+	padding: 20px;
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	gap: 10px;
+}
+
+.dsu-unit-size {
+	font-size: 1.2rem;
+	font-weight: 700;
+	margin: 0;
+	line-height: 1.3;
+}
+
+.dsu-special-callout {
+	background: #fffbea;
+	border: 1px solid #f5d000;
+	border-radius: 6px;
+	padding: 6px 10px;
+	font-size: 16px;
+	font-weight: 600;
+	color: #7a5800;
+}
+
+.dsu-features-section {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.dsu-features-heading {
+	font-size: 11px;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	color: #888;
+	margin: 0;
+}
+
+.dsu-features {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 5px;
+}
+
+.dsu-features li {
+	font-size: 13px;
+	background: #f4f4f5;
+	border-radius: 4px;
+	padding: 3px 8px;
+	color: #555;
+}
+
+.dsu-availability {
+	font-size: 13px;
+	font-weight: 600;
+}
+
+.dsu-low-stock {
+	color: var(--dsu-primary);
+}
+
+.dsu-soldout {
+	color: #999;
+}
+
+.dsu-price {
+	font-size: 1.5rem;
+	font-weight: 700;
+	color: #111;
+	display: flex;
+	align-items: baseline;
+	gap: 6px;
+	flex-wrap: wrap;
+}
+
+.dsu-per-month {
+	font-size: 0.75rem;
+	font-weight: 400;
+	color: #777;
+}
+
+.dsu-original-price {
+	font-size: 0.9rem;
+	font-weight: 400;
+	color: #aaa;
+	text-decoration: line-through;
+}
+
+/* ---- CTA buttons (grid card) ---- */
+.dsu-cta-buttons {
+	margin-top: auto;
+	display: flex;
+	gap: 8px;
+	flex-wrap: wrap;
+}
+
+.dsu-cta-buttons .dsu-btn {
+	flex: 1 1 auto;
+	min-width: 80px;
+	text-align: center;
+	padding: 9px 12px;
+	white-space: normal;
+	word-break: break-word;
+}
+
+.dsu-btn {
+	display: inline-block;
+	padding: 10px 18px;
+	border-radius: 6px;
+	font-size: 14px;
+	font-weight: 600;
+	text-decoration: none;
+	cursor: pointer;
+	border: 2px solid transparent;
+	transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+	white-space: nowrap;
+	line-height: 1.4;
+	text-align: center;
+}
+
+.dsu-btn-primary {
+	background: var(--dsu-primary);
+	color: var(--dsu-primary-text);
+	border-color: var(--dsu-primary);
+}
+
+.dsu-btn-primary:hover {
+	filter: brightness(0.88);
+	color: var(--dsu-primary-text);
+}
+
+.dsu-btn-secondary {
+	background: transparent;
+	color: var(--dsu-secondary);
+	border-color: var(--dsu-secondary);
+}
+
+.dsu-btn-secondary:hover {
+	background: var(--dsu-secondary);
+	color: var(--dsu-secondary-text);
+}
+
+.dsu-btn-waitlist {
+	background: #6c757d;
+	color: #fff;
+	border-color: #6c757d;
+}
+
+.dsu-btn-waitlist:hover {
+	background: #5a6268;
+	border-color: #5a6268;
+	color: #fff;
+}
+
+/* ---- No results ---- */
+.dsu-no-results {
+	grid-column: 1 / -1;
+	text-align: center;
+	color: #888;
+	padding: 40px 0;
+}
+
+/* ========================================
+   LIST CARD  (dsu-list-card)
+======================================== */
+
+/* ---- Focus styles (accessibility) ---- */
+.dsu-btn:focus-visible,
+.dsu-cat-tile:focus-visible {
+	outline: 3px solid var(--dsu-primary);
+	outline-offset: 2px;
+}
+
+.dsu-list-card {
+	display: grid;
+	grid-template-columns: 130px minmax(160px, 1fr) minmax(160px, 240px) 140px;
+	grid-template-areas: "image info rate cta";
+	background: #F2F2F4;
+	border-radius: 14px;
+	overflow: hidden;
+	width: 100%;
+}
+
+/* Grid area assignments */
+.dsu-list-image-col { grid-area: image; }
+.dsu-list-info-col  { grid-area: info; }
+.dsu-list-rate-col  { grid-area: rate; }
+.dsu-list-cta-col   { grid-area: cta; }
+
+/* All grid children: prevent overflow */
+.dsu-list-image-col,
+.dsu-list-info-col,
+.dsu-list-rate-col,
+.dsu-list-cta-col {
+	min-width: 0;
+}
+
+/* Column 1 — image */
+.dsu-list-image-col {
+	padding: 16px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: #F2F2F4;
+	align-self: start; /* prevents the column from stretching taller than the square wrap */
+}
+
+.dsu-list-image-wrap {
+	position: relative;
+	width: 100%;
+	aspect-ratio: 4 / 3;
+	border-radius: 10px;
+	overflow: hidden;
+	background: #F2F2F4;
+}
+
+.dsu-list-image-wrap img {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	object-fit: contain;
+	display: block;
+}
+
+/* Column 2 — info */
+.dsu-list-info-col {
+	padding: 24px 20px;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	justify-content: center;
+	align-items: flex-start;
+	text-align: left;
+	min-width: 0;
+	overflow-wrap: normal;
+	word-break: normal;
+}
+
+.dsu-list-info-col .dsu-unit-size {
+	font-size: 1.1rem;
+	font-weight: 700;
+	margin: 0;
+	color: #111;
+}
+
+.dsu-special-inline {
+	font-size: 14px;
+	margin: 0;
+	line-height: 1.5;
+	color: #333;
+}
+
+.dsu-special-prefix {
+	font-weight: 700;
+	font-style: italic;
+}
+
+.dsu-special-inline em {
+	font-style: italic;
+}
+
+.dsu-scarcity-text {
+	font-size: 13px;
+	font-style: italic;
+	color: var(--dsu-primary);
+	margin: 0;
+}
+
+.dsu-scarcity-soldout {
+	color: #999;
+}
+
+/* Special callout in list card info column */
+.dsu-list-special-callout {
+	font-size: 16px;
+	margin: 0;
+	color: #7a5800;
+	line-height: 1.5;
+	background: #fffbea;
+	border: 1px solid #f5d000;
+	border-radius: 6px;
+	padding: 6px 12px;
+	display: inline-block;
+}
+
+/* Feature tiles */
+.dsu-feat-icons-row {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	margin-top: 4px;
+}
+
+.dsu-feat-tile {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	background: #e8edf7;
+	border-radius: 20px;
+	padding: 4px 10px;
+}
+
+.dsu-feat-tile span {
+	font-size: 13px;
+	color: #444;
+	line-height: 1.3;
+}
+
+/* Emoji prefix tile */
+.dsu-feat-emoji {
+	font-size: 16px;
+	line-height: 1;
+}
+
+/* Feature tile size variants — medium */
+.dsu-feat-icons-row--md .dsu-feat-tile {
+	padding: 5px 12px;
+	gap: 6px;
+}
+.dsu-feat-icons-row--md .dsu-feat-tile span {
+	font-size: 16px;
+}
+.dsu-feat-icons-row--md .dsu-feat-emoji {
+	font-size: 19px;
+}
+
+/* Feature tile size variants — large */
+.dsu-feat-icons-row--lg .dsu-feat-tile {
+	padding: 7px 15px;
+	gap: 7px;
+}
+.dsu-feat-icons-row--lg .dsu-feat-tile span {
+	font-size: 19px;
+}
+.dsu-feat-icons-row--lg .dsu-feat-emoji {
+	font-size: 24px;
+}
+
+/* Grid-card feature list size variants */
+.dsu-features--md li {
+	font-size: 16px;
+	padding: 4px 10px;
+}
+.dsu-features--lg li {
+	font-size: 19px;
+	padding: 5px 12px;
+}
+
+/* Column 3 — rate */
+.dsu-list-rate-col {
+	padding: 24px 20px;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	justify-content: center;
+	align-items: center;
+	text-align: center;
+	border-left: 1px solid rgba(0, 0, 0, 0.07);
+	background: #F2F2F4;
+}
+
+/* Column 4 — CTAs */
+.dsu-list-cta-col {
+	padding: 20px 16px;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	align-items: stretch;
+	justify-content: center;
+	border-left: 1px solid rgba(0, 0, 0, 0.07);
+	background: #F2F2F4;
+}
+
+.dsu-list-cta-col .dsu-btn {
+	width: 100%;
+	text-align: center;
+	padding: 10px 12px;
+	white-space: normal;
+	word-break: break-word;
+}
+
+.dsu-pricing-soldout {
+	font-size: 1.1rem;
+	font-weight: 600;
+	color: #aaa;
+}
+
+/* State A — with special */
+.dsu-pricing-special {
+	display: flex;
+	flex-direction: column;
+	gap: 5px;
+	align-items: center;
+}
+
+.dsu-online-rate-label {
+	font-size: 13px;
+	font-weight: 700;
+	color: var(--dsu-primary);
+	text-transform: uppercase;
+	letter-spacing: 0.6px;
+}
+
+.dsu-street-rate-strike {
+	font-size: 0.95rem;
+	color: #bbb;
+	text-decoration: line-through;
+	line-height: 1;
+}
+
+.dsu-special-rate-main {
+	font-size: 1.9rem;
+	font-weight: 700;
+	color: #111;
+	line-height: 1;
+	display: flex;
+	align-items: baseline;
+	justify-content: center;
+	gap: 3px;
+	flex-wrap: wrap;
+}
+
+.dsu-per-month-sm {
+	font-size: 0.72rem;
+	font-weight: 400;
+	color: #777;
+}
+
+.dsu-asterisk {
+	font-size: 0.85rem;
+	font-weight: 500;
+	color: #555;
+	vertical-align: super;
+}
+
+.dsu-reserve-desc {
+	font-size: 12.5px;
+	color: #555;
+	line-height: 1.45;
+	margin: 3px 0 0;
+}
+
+.dsu-no-card-line {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+	font-size: 12.5px;
+	color: #666;
+	margin: 0;
+}
+
+.dsu-no-card-icon {
+	width: 15px;
+	height: 15px;
+	flex-shrink: 0;
+	color: #888;
+}
+
+/* State B — plain pricing */
+.dsu-pricing-plain {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	align-items: center;
+}
+
+.dsu-price-plain-value {
+	font-size: 1.9rem;
+	font-weight: 700;
+	color: #111;
+	line-height: 1;
+	display: flex;
+	align-items: baseline;
+	justify-content: center;
+	gap: 3px;
+}
+
+
+/* ---- List card: tablet (image spans both rows; info top, rate+cta bottom) ---- */
+/* Container queries so breakpoints fire on card width, not viewport width.       */
+/* This fixes phones in "desktop mode" where viewport may be 980px but the card  */
+/* container is only ~350px wide.                                                 */
+@container (max-width: 960px) {
+	.dsu-list-card,
+	.dsu-img-sm .dsu-list-card,
+	.dsu-img-lg .dsu-list-card {
+		grid-template-columns: 110px 1fr 1fr;
+		grid-template-areas:
+			"image info info"
+			"image rate cta";
+	}
+	.dsu-list-image-col {
+		align-self: stretch;
+		align-items: flex-start;
+		padding-top: 24px;
+	}
+	.dsu-list-rate-col {
+		border-left: none;
+		border-top: 1px solid rgba(0, 0, 0, 0.07);
+		min-width: 0;
+	}
+	.dsu-list-cta-col {
+		border-top: 1px solid rgba(0, 0, 0, 0.07);
+		min-width: 0;
+	}
+}
+
+/* ---- List card: mobile (single column stack) ---- */
+@container (max-width: 540px) {
+	.dsu-list-card,
+	.dsu-img-sm .dsu-list-card,
+	.dsu-img-lg .dsu-list-card {
+		grid-template-columns: 1fr;
+		grid-template-areas:
+			"image"
+			"info"
+			"rate"
+			"cta";
+	}
+	/* Image fills full card width as a 16:9 banner */
+	.dsu-list-image-col {
+		padding: 0;
+		align-self: auto;
+		align-items: stretch;
+		justify-content: stretch;
+	}
+	.dsu-list-image-wrap {
+		width: 100%;
+		height: auto;
+		aspect-ratio: 16 / 9;
+		border-radius: 0;
+	}
+	.dsu-list-image-wrap img {
+		object-fit: cover;
+	}
+	.dsu-list-rate-col,
+	.dsu-list-cta-col {
+		border-left: none;
+		border-top: 1px solid rgba(0, 0, 0, 0.08);
+	}
+	.dsu-list-info-col,
+	.dsu-list-rate-col,
+	.dsu-list-cta-col {
+		padding: 16px;
+	}
+	.dsu-list-info-col .dsu-unit-size {
+		font-size: 1.25rem;
+	}
+	.dsu-list-rate-col {
+		text-align: center;
+	}
+}
+
+/* ---- Grid card tweaks on small viewports ---- */
+@media (max-width: 540px) {
+	.dsu-card-body {
+		padding: 14px 16px;
+	}
+	.dsu-unit-size {
+		font-size: 1.25rem;
+	}
+}
+
+@media (max-width: 767px) {
+	.dsu-hide-mobile { display: none !important; }
+}
+
+/* ========================================
+   CATEGORY TILES
+======================================== */
+
+.dsu-cat-tiles-wrap {
+	margin-bottom: 24px;
+	overflow-x: auto;
+	-webkit-overflow-scrolling: touch;
+	/* hide scrollbar while keeping scroll */
+	scrollbar-width: none;
+}
+
+.dsu-cat-tiles-wrap::-webkit-scrollbar {
+	display: none;
+}
+
+.dsu-cat-tiles {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+	padding-bottom: 4px;
+}
+
+.dsu-cat-tiles--center {
+	justify-content: center;
+}
+
+.dsu-cat-tile {
+	background: #fff;
+	border: 2px solid transparent;
+	border-radius: 12px;
+	padding: 16px 18px;
+	min-width: 150px;
+	max-width: 200px;
+	text-align: left;
+	cursor: pointer;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+	transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+	display: flex;
+	flex-direction: column;
+	gap: 3px;
+	flex-shrink: 0;
+	font-family: inherit;
+}
+
+.dsu-cat-tile:hover:not([disabled]) {
+	border-color: var(--dsu-primary);
+	box-shadow: 0 4px 16px rgba(0, 0, 0, 0.11);
+}
+
+.dsu-cat-tile--active {
+	border-color: var(--dsu-primary);
+	background: #f0f6ff;
+}
+
+.dsu-cat-tile--unavailable {
+	opacity: 0.55;
+	cursor: default;
+}
+
+.dsu-cat-tile-label {
+	display: block;
+	font-size: 15px;
+	font-weight: 700;
+	color: #111;
+	line-height: 1.2;
+}
+
+.dsu-cat-tile-desc {
+	display: block;
+	font-size: 12px;
+	color: #595959;
+	line-height: 1.3;
+}
+
+.dsu-cat-tile-price {
+	display: block;
+	font-size: 14px;
+	font-weight: 700;
+	color: #111;
+	margin-top: 10px;
+	line-height: 1.2;
+}
+
+.dsu-cat-tile-movein {
+	display: block;
+	font-size: 11.5px;
+	color: #666;
+	line-height: 1.3;
+}
+
+.dsu-cat-tile-unavailable {
+	display: block;
+	font-size: 12px;
+	color: #aaa;
+	font-style: italic;
+	margin-top: 10px;
+}
+
+/* ========================================
+   PROMO BAR
+======================================== */
+
+.dsu-promo-bar-wrap {
+	margin-bottom: 16px;
+	width: 100%;
+}
+
+.dsu-promo-bar {
+	display: block;
+	width: 100%;
+	background: var(--dsu-promo-bg);
+	border: 2px dashed var(--dsu-promo-border);
+	border-radius: 12px;
+	padding: 16px 22px;
+	text-align: left;
+	cursor: pointer;
+	font-family: inherit;
+	transition: background 0.15s ease, border-color 0.15s ease;
+	box-sizing: border-box;
+}
+
+.dsu-promo-bar:hover {
+	background: var(--dsu-promo-bg-hover);
+	border-color: var(--dsu-promo-border-hover);
+}
+
+.dsu-promo-bar--active {
+	background: var(--dsu-promo-bg-active);
+	border: 2px solid var(--dsu-promo-border-hover);
+}
+
+.dsu-promo-bar--active:hover {
+	filter: brightness(0.97);
+}
+
+.dsu-promo-bar:focus-visible {
+	outline: 3px solid var(--dsu-primary);
+	outline-offset: 2px;
+}
+
+.dsu-promo-bar-eyebrow {
+	display: block;
+	font-size: 1.1rem;
+	font-weight: 400;
+	color: var(--dsu-promo-text);
+	line-height: 1.3;
+	margin-bottom: 6px;
+}
+
+.dsu-promo-bar-main {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	flex-wrap: wrap;
+}
+
+.dsu-promo-bar-icon {
+	width: 22px;
+	height: 22px;
+	flex-shrink: 0;
+	color: var(--dsu-promo-border-hover);
+}
+
+.dsu-promo-bar-icon svg {
+	width: 100%;
+	height: 100%;
+	display: block;
+}
+
+.dsu-promo-bar-label {
+	font-size: 1.5rem;
+	font-weight: 700;
+	color: var(--dsu-promo-text);
+	line-height: 1.25;
+	min-width: 0;
+}
+
+/* ========================================
+   MODAL
+======================================== */
+
+.dsu-modal {
+	position: fixed;
+	inset: 0;
+	z-index: 99999;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.dsu-modal[hidden] {
+	display: none;
+}
+
+.dsu-modal-overlay {
+	position: absolute;
+	inset: 0;
+	background: rgba(0, 0, 0, 0.55);
+	cursor: pointer;
+}
+
+.dsu-modal-dialog {
+	position: relative;
+	z-index: 1;
+	background: #fff;
+	border-radius: 12px;
+	padding: 36px;
+	width: 100%;
+	max-width: 480px;
+	box-shadow: 0 16px 48px rgba(0, 0, 0, 0.22);
+}
+
+.dsu-modal-close {
+	position: absolute;
+	top: 16px;
+	right: 16px;
+	background: none;
+	border: none;
+	font-size: 18px;
+	cursor: pointer;
+	color: #555;
+	line-height: 1;
+	padding: 4px;
+}
+
+.dsu-modal-close:hover {
+	color: #000;
+}
+
+.dsu-modal-dialog h2 {
+	margin: 0 0 6px;
+	font-size: 1.4rem;
+}
+
+.dsu-modal-subtitle {
+	color: #666;
+	margin: 0 0 20px;
+	font-size: 14px;
+}
+
+.dsu-field {
+	display: flex;
+	flex-direction: column;
+	gap: 5px;
+	margin-bottom: 14px;
+}
+
+.dsu-field label {
+	font-size: 14px;
+	font-weight: 600;
+}
+
+.dsu-field input {
+	padding: 9px 12px;
+	border: 1.5px solid #ccc;
+	border-radius: 6px;
+	font-size: 14px;
+	width: 100%;
+	box-sizing: border-box;
+	transition: border-color 0.15s;
+}
+
+.dsu-field input:focus {
+	outline: none;
+	border-color: var(--dsu-primary);
+}
+
+.required {
+	color: #e63946;
+}
+
+#dsu-wl-messages {
+	font-size: 14px;
+	margin-bottom: 10px;
+	min-height: 20px;
+}
+
+#dsu-wl-messages.dsu-success {
+	color: #2a7a2e;
+}
+
+#dsu-wl-messages.dsu-error {
+	color: #c0392b;
+}
+
+.dsu-wl-submit {
+	width: 100%;
+	text-align: center;
+}
+
+/* ========================================
+   TIER MODAL
+======================================== */
+
+.dsu-tier-modal-overlay {
+	position: fixed;
+	inset: 0;
+	background: rgba(0, 0, 0, 0.55);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 99999;
+	padding: 16px;
+	box-sizing: border-box;
+}
+
+.dsu-tier-modal-overlay[hidden] {
+	display: none;
+}
+
+.dsu-tier-modal-dialog {
+	background: #fff;
+	border-radius: 12px;
+	width: 100%;
+	max-width: 880px;
+	max-height: 90vh;
+	overflow-y: auto;
+	padding: 28px 28px 24px;
+	position: relative;
+	box-shadow: 0 16px 48px rgba(0, 0, 0, 0.22);
+}
+
+.dsu-tier-modal-header {
+	margin-bottom: 20px;
+	padding-right: 44px;
+}
+
+.dsu-tier-modal-title {
+	margin: 0 0 4px;
+	font-size: 1.35em;
+}
+
+.dsu-tier-modal-subtitle {
+	margin: 0;
+	color: #666;
+	font-size: 0.9em;
+}
+
+.dsu-tier-modal-close {
+	position: absolute;
+	top: 18px;
+	right: 20px;
+	background: none;
+	border: none;
+	font-size: 1.6em;
+	line-height: 1;
+	cursor: pointer;
+	color: #666;
+	padding: 4px 8px;
+	border-radius: 4px;
+	transition: color 0.12s, background 0.12s;
+}
+
+.dsu-tier-modal-close:hover {
+	color: #111;
+	background: #f0f0f0;
+}
+
+.dsu-tier-modal-close:focus-visible {
+	outline: 3px solid var(--dsu-primary);
+	outline-offset: 2px;
+}
+
+/* ---- Tier columns ---- */
+
+.dsu-tier-cols {
+	display: flex;
+	flex-direction: row;
+	gap: 16px;
+	align-items: stretch;
+}
+
+.dsu-tier-col {
+	flex: 1;
+	border: 2px solid #e0e0e0;
+	border-radius: 10px;
+	padding: 18px 16px 16px;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	min-width: 0;
+}
+
+.dsu-tier-col--soldout {
+	opacity: 0.65;
+}
+
+/* Tier color accents */
+.dsu-tier-col--good   { border-color: #22a06b; }
+.dsu-tier-col--better { border-color: #1a73e8; }
+.dsu-tier-col--best   { border-color: #7b2fff; }
+
+.dsu-tier-label {
+	font-size: 0.68em;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.07em;
+	padding: 3px 9px;
+	border-radius: 12px;
+	display: inline-block;
+	margin-bottom: 2px;
+	align-self: flex-start;
+}
+
+.dsu-tier-col--good   .dsu-tier-label { background: #e3f9ee; color: #1a7a51; }
+.dsu-tier-col--better .dsu-tier-label { background: #e8f0fe; color: #1557b0; }
+.dsu-tier-col--best   .dsu-tier-label { background: #f3ecff; color: #5b1fcc; }
+
+.dsu-tier-unit-type {
+	margin: 0;
+	font-size: 1em;
+	font-weight: 700;
+	line-height: 1.3;
+}
+
+.dsu-tier-dims {
+	margin: 0;
+	font-size: 0.84em;
+	color: #666;
+	line-height: 1.4;
+}
+
+.dsu-tier-sqft {
+	display: inline-block;
+	margin-left: 4px;
+}
+
+.dsu-tier-features {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	margin-top: 2px;
+}
+
+.dsu-tier-price {
+	border-top: 1px solid #f0f0f0;
+	padding-top: 10px;
+	text-align: center;
+}
+
+.dsu-tier-cta {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.dsu-tier-cta .dsu-btn {
+	width: 100%;
+	text-align: center;
+	padding: 10px 12px;
+	font-size: 0.9em;
+}
+
+/* ---- Grouped card extras ---- */
+
+.dsu-price--grouped .dsu-from-label {
+	font-size: 0.72em;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	color: #666;
+	display: inline-block;
+	margin-right: 4px;
+}
+
+.dsu-pricing-grouped {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 4px;
+}
+
+.dsu-pricing-grouped .dsu-from-label {
+	font-size: 11px;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+	color: #888;
+}
+
+/* ---- Mobile: stack tiers vertically ---- */
+
+@media (max-width: 640px) {
+	.dsu-tier-cols {
+		flex-direction: column;
+	}
+
+	.dsu-tier-modal-dialog {
+		padding: 20px 16px 16px;
+		max-height: 95vh;
+	}
+}
+
+/* ========================================
+   UNIT TYPE FILTER
+======================================== */
+
+.dsu-unit-type-wrap {
+	margin-bottom: 12px;
+}
+
+.dsu-unit-type-filter {
+	display: flex;
+	flex-wrap: nowrap;
+	gap: 6px;
+	overflow-x: auto;
+	-webkit-overflow-scrolling: touch;
+	scrollbar-width: none;
+}
+
+.dsu-unit-type-filter::-webkit-scrollbar {
+	display: none;
+}
+
+.dsu-unit-type-btn {
+	background: #fff;
+	border: 1.5px solid #d0d5dd;
+	border-radius: 6px;
+	padding: 5px 16px;
+	font-size: 13px;
+	font-weight: 600;
+	color: #444;
+	cursor: pointer;
+	font-family: inherit;
+	line-height: 1.4;
+	transition: border-color 0.15s, background 0.15s, color 0.15s;
+	white-space: nowrap;
+	flex: 1 1 0;
+	min-width: 0;
+	text-align: center;
+}
+
+.dsu-unit-type-btn:hover:not(.dsu-unit-type-btn--active) {
+	border-color: var(--dsu-primary);
+	color: var(--dsu-primary);
+}
+
+.dsu-unit-type-btn--active {
+	background: var(--dsu-primary);
+	border-color: var(--dsu-primary);
+	color: var(--dsu-primary-text);
+}
+
+.dsu-unit-type-btn:focus-visible {
+	outline: 3px solid var(--dsu-primary);
+	outline-offset: 2px;
+}
+
+/* ========================================
+   SIZING MODIFIERS
+   Applied as classes on .dsu-wrap.
+   "md" is the default — no extra class needed.
+   All font sizes use clamp() so they scale
+   naturally between mobile min and desktop max.
+======================================== */
+
+/* ---- Image size: grid cards ---- */
+.dsu-img-sm .dsu-card-image { aspect-ratio: 16 / 7; }
+/* .dsu-img-md — 16/9 is the default above */
+.dsu-img-lg .dsu-card-image { aspect-ratio: 4 / 3; }
+
+/* ---- Image size: list cards (desktop column width) ---- */
+.dsu-img-sm .dsu-list-card {
+	grid-template-columns: 90px minmax(160px, 1fr) minmax(160px, 240px) 140px;
+}
+.dsu-img-lg .dsu-list-card {
+	grid-template-columns: 180px minmax(160px, 1fr) minmax(160px, 240px) 140px;
+}
+
+/* ---- Title size ---- */
+.dsu-title-sm .dsu-unit-size {
+	font-size: clamp(0.75rem, 1.5vw, 0.9rem);
+}
+.dsu-title-lg .dsu-unit-size {
+	font-size: clamp(1.4rem, 3vw, 1.85rem);
+}
+
+/* ---- Special / promo text size ---- */
+.dsu-special-sm .dsu-special-callout,
+.dsu-special-sm .dsu-list-special-callout {
+	font-size: 12px;
+}
+.dsu-special-sm .dsu-special-inline {
+	font-size: 11px;
+}
+.dsu-special-lg .dsu-special-callout,
+.dsu-special-lg .dsu-list-special-callout {
+	font-size: 20px;
+}
+.dsu-special-lg .dsu-special-inline {
+	font-size: 17px;
+}
+
+/* ---- Price & detail size ---- */
+/* sm */
+.dsu-price-sm .dsu-price {
+	font-size: clamp(1rem, 2.5vw, 1.2rem);
+}
+.dsu-price-sm .dsu-special-rate-main,
+.dsu-price-sm .dsu-price-plain-value {
+	font-size: clamp(1.2rem, 3vw, 1.4rem);
+}
+.dsu-price-sm .dsu-online-rate-label { font-size: 10px; }
+.dsu-price-sm .dsu-street-rate-strike { font-size: 0.8rem; }
+.dsu-price-sm .dsu-reserve-desc,
+.dsu-price-sm .dsu-no-card-line { font-size: 10px; }
+
+/* lg */
+.dsu-price-lg .dsu-price {
+	font-size: clamp(1.5rem, 3.5vw, 2rem);
+}
+.dsu-price-lg .dsu-special-rate-main,
+.dsu-price-lg .dsu-price-plain-value {
+	font-size: clamp(1.9rem, 4.5vw, 2.4rem);
+}
+.dsu-price-lg .dsu-online-rate-label { font-size: 14px; }
+.dsu-price-lg .dsu-street-rate-strike { font-size: 1.1rem; }
+.dsu-price-lg .dsu-reserve-desc,
+.dsu-price-lg .dsu-no-card-line { font-size: 14px; }
+
+/* ---- Scarcity text size ---- */
+.dsu-scarcity-sm .dsu-scarcity-text,
+.dsu-scarcity-sm .dsu-low-stock { font-size: 11px; }
+.dsu-scarcity-lg .dsu-scarcity-text,
+.dsu-scarcity-lg .dsu-low-stock { font-size: 16px; }
+
+/* ---- Unit type filter size ---- */
+.dsu-utf-sm .dsu-unit-type-btn { font-size: 11px; padding: 3px 10px; }
+.dsu-utf-lg .dsu-unit-type-btn { font-size: 16px; padding: 8px 20px; }
+
+/* ---- Image-size modifier responsive overrides ----
+   The .dsu-img-sm/.dsu-img-lg rules above have the same specificity as the
+   @container rules earlier in the file but come LATER, so they win the
+   cascade and override the responsive grid-template-columns. These rules
+   restore the correct column counts AFTER the base modifier rules. ---- */
+@container (max-width: 960px) {
+	.dsu-img-sm .dsu-list-card,
+	.dsu-img-lg .dsu-list-card {
+		grid-template-columns: 110px 1fr 1fr;
+	}
+}
+@container (max-width: 540px) {
+	.dsu-img-sm .dsu-list-card,
+	.dsu-img-lg .dsu-list-card {
+		grid-template-columns: 1fr;
+	}
+}

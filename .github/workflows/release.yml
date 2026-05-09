@@ -1,0 +1,40 @@
+name: Release Plugin
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get version from tag
+        id: ver
+        run: echo "version=${GITHUB_REF_NAME#v}" >> $GITHUB_OUTPUT
+
+      - name: Zip plugin
+        run: zip -r dynamic-storage-units-${{ steps.ver.outputs.version }}.zip dynamic-storage-units/
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: v${{ steps.ver.outputs.version }}
+          generate_release_notes: true
+          files: dynamic-storage-units-${{ steps.ver.outputs.version }}.zip
+
+      - name: Push version to license server
+        env:
+          ADMIN_SECRET: ${{ secrets.ADMIN_SECRET }}
+          VERSION: ${{ steps.ver.outputs.version }}
+          DOWNLOAD_URL: ${{ github.server_url }}/${{ github.repository }}/releases/download/${{ github.ref_name }}/dynamic-storage-units-${{ steps.ver.outputs.version }}.zip
+        run: |
+          curl -fsS -X PUT https://dsu-license-server.vercel.app/api/admin/plugin \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer $ADMIN_SECRET" \
+            -d "{\"version\":\"$VERSION\",\"download_url\":\"$DOWNLOAD_URL\"}"
