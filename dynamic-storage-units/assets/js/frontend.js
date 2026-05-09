@@ -54,50 +54,6 @@
 		if ($noResults.length) {
 			$noResults.toggle($cards.filter(':visible').length === 0);
 		}
-
-		syncUnitTypeFilter(config);
-	}
-
-	function syncUnitTypeFilter(config) {
-		var $wrap = $('.dsu-unit-type-wrap[data-config="' + config + '"]');
-		if (!$wrap.length) return;
-
-		var state  = getState(config);
-		var $grid  = $('.dsu-grid[data-config="' + config + '"]');
-		var $cards = $grid.find('.dsu-list-card, .dsu-unit-card');
-
-		// Collect which unit types appear in cards that pass category + promo filters
-		// (intentionally ignoring the unit type filter itself so we don't hide options
-		// the user selected, and so we always show what's truly available)
-		var presentTypes = {};
-		$cards.each(function () {
-			var $card      = $(this);
-			var catMatch   = !state.category || $card.attr('data-category') === state.category;
-			var promoMatch = !state.promo    || $card.attr('data-has-promo') === '1';
-			if (catMatch && promoMatch) {
-				var type = ($card.attr('data-unit-type') || '').toLowerCase();
-				if (type) { presentTypes[type] = true; }
-			}
-		});
-
-		// Show/hide individual type buttons; reset selection if active type vanished
-		var visibleCount = 0;
-		$wrap.find('.dsu-unit-type-btn').each(function () {
-			var btnType = ($(this).attr('data-unit-type') || '').toLowerCase();
-			if (!btnType) return; // skip the "All" button
-			var show = !!presentTypes[btnType];
-			$(this).toggle(show);
-			if (show) visibleCount++;
-			if (!show && state.unitType === btnType) {
-				$wrap.find('.dsu-unit-type-btn[data-unit-type=""]')
-					.addClass('dsu-unit-type-btn--active').attr('aria-pressed', 'true');
-				$(this).removeClass('dsu-unit-type-btn--active').attr('aria-pressed', 'false');
-				state.unitType = '';
-			}
-		});
-
-		// Hide the entire filter if fewer than 2 type options are available
-		$wrap.toggle(visibleCount >= 2);
 	}
 
 	/* ---- Category tile filtering ---- */
@@ -243,13 +199,6 @@
 			$(this).attr('hidden', true);
 			$('body').css('overflow', '');
 		}
-	});
-
-	/* ---- Init: sync unit type filter on page load for each config ---- */
-	$(function () {
-		$('.dsu-unit-type-wrap[data-config]').each(function () {
-			syncUnitTypeFilter($(this).data('config'));
-		});
 	});
 
 	/* ---- Tier modal: close on Escape ---- */
