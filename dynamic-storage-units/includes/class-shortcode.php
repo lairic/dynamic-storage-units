@@ -25,6 +25,10 @@ class DSU_Shortcode {
 			return '<div class="dsu-placeholder">[' . esc_html__( 'Storage units display', 'dynamic-storage-units' ) . ']</div>';
 		}
 
+		if ( ! DSU_License::is_active() ) {
+			return '';
+		}
+
 		$atts = shortcode_atts( [ 'config' => '', 'debug' => '0', 'show_promo_bar' => '' ], $atts, 'storage_units' );
 
 		$config_name = sanitize_text_field( $atts['config'] );

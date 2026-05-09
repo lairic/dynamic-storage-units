@@ -22,6 +22,7 @@ class DSU_Admin {
 		add_action( 'wp_ajax_dsu_fetch_lead_sources', [ $this, 'ajax_fetch_lead_sources' ] );
 		add_action( 'wp_ajax_dsu_activate_license',   [ $this, 'ajax_activate_license' ] );
 		add_action( 'wp_ajax_dsu_deactivate_license', [ $this, 'ajax_deactivate_license' ] );
+		add_action( 'admin_notices', [ $this, 'license_admin_notice' ] );
 	}
 
 	public function register_menu() {
@@ -839,6 +840,32 @@ class DSU_Admin {
 			'fallback_id'  => sanitize_text_field( $input['fallback_id'] ?? '' ),
 			'lead_sources' => $current['lead_sources'] ?? [],
 		];
+	}
+
+	public function license_admin_notice() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+		if ( DSU_License::is_active() ) {
+			return;
+		}
+
+		$license_url = admin_url( 'options-general.php?page=dynamic-storage-units&tab=license' );
+		$status      = DSU_License::get_key() ? DSU_License::get_status() : 'unlicensed';
+
+		if ( $status === 'unlicensed' ) {
+			$message = sprintf(
+				__( '<strong>Dynamic Storage Units:</strong> No license key is active. The unit display shortcode is disabled. <a href="%s">Enter your license key →</a>', 'dynamic-storage-units' ),
+				esc_url( $license_url )
+			);
+		} else {
+			$message = sprintf(
+				__( '<strong>Dynamic Storage Units:</strong> Your license is invalid or not activated for this site. The unit display shortcode is disabled. <a href="%s">Fix license →</a>', 'dynamic-storage-units' ),
+				esc_url( $license_url )
+			);
+		}
+
+		echo '<div class="notice notice-error"><p>' . wp_kses( $message, [ 'strong' => [], 'a' => [ 'href' => [] ] ] ) . '</p></div>';
 	}
 
 	public function ajax_activate_license() {
