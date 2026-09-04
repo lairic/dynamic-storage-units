@@ -424,6 +424,7 @@ $tier_modals   = [];
 	$tier_labels  = $tier_item['tier_labels'];
 	$tier_classes = $tier_item['tier_classes'];
 	$had_overflow = $tier_item['had_overflow'];
+	$special_banner = $tier_item['special_banner'] ?? '';
 	include DSU_PLUGIN_DIR . 'templates/tier-modal.php';
 endforeach; ?>
 

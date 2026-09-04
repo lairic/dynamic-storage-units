@@ -94,6 +94,19 @@ class DSU_Cache {
 		);
 	}
 
+	// Per-unit records (class, isRentable, availabilityStatus)
+	public static function get_units( $company_code, $facility_code ) {
+		return get_transient( 'dsu_units_' . self::base_key( $company_code, $facility_code ) );
+	}
+
+	public static function set_units( $company_code, $facility_code, $data ) {
+		set_transient(
+			'dsu_units_' . self::base_key( $company_code, $facility_code ),
+			$data,
+			self::duration() * MINUTE_IN_SECONDS
+		);
+	}
+
 	// Facility info (name, address, phone from API)
 	public static function get_facility_info( $company_code, $facility_code ) {
 		return get_transient( 'dsu_facinfo_' . self::base_key( $company_code, $facility_code ) );
@@ -117,7 +130,9 @@ class DSU_Cache {
 				'_transient_timeout_' . $key_prefix . '%'
 			)
 		);
-		// Also clear the groups list key
+		// Also clear the list keys, which prefix the base key rather than following it
 		delete_transient( 'dsu_groups_' . self::base_key( $company_code, $facility_code ) );
+		delete_transient( 'dsu_units_' . self::base_key( $company_code, $facility_code ) );
+		delete_transient( 'dsu_v1grp_' . self::base_key( $company_code, $facility_code ) );
 	}
 }

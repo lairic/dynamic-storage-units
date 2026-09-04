@@ -50,6 +50,7 @@ $all_categories = dsu_get_size_categories();
 						<th><?php esc_html_e( 'Image', 'dynamic-storage-units' ); ?></th>
 						<th class="dsu-sort-th" data-sort="category" style="cursor:pointer;"><?php esc_html_e( 'Size Category', 'dynamic-storage-units' ); ?> <span class="dsu-sort-ind"></span></th>
 						<th><?php esc_html_e( 'Unit Type', 'dynamic-storage-units' ); ?></th>
+						<th><?php esc_html_e( 'Class Features', 'dynamic-storage-units' ); ?></th>
 						<th><?php esc_html_e( 'Actions', 'dynamic-storage-units' ); ?></th>
 					</tr>
 				</thead>
@@ -100,6 +101,21 @@ $all_categories = dsu_get_size_categories();
 									</option>
 								<?php endforeach; ?>
 							</select>
+						</td>
+						<td class="dsu-col-class-feats">
+							<?php
+							$cf = is_array( $data['class_features'] ?? null ) ? $data['class_features'] : [];
+							foreach ( [ 'Economy', 'Standard', 'Premium' ] as $cls ) :
+								$val = isset( $cf[ $cls ] ) ? implode( ', ', (array) $cf[ $cls ] ) : '';
+							?>
+								<label class="dsu-class-feat-row">
+									<span><?php echo esc_html( $cls ); ?></span>
+									<input type="text"
+									       name="<?php echo DSU_OPTION_IMAGES; ?>[<?php echo esc_attr( $group_id ); ?>][class_features][<?php echo esc_attr( $cls ); ?>]"
+									       value="<?php echo esc_attr( $val ); ?>"
+									       placeholder="<?php esc_attr_e( 'e.g. Drive-Up Access, Near Elevator', 'dynamic-storage-units' ); ?>" />
+								</label>
+							<?php endforeach; ?>
 						</td>
 						<td>
 							<button type="button" class="button button-small dsu-select-image">

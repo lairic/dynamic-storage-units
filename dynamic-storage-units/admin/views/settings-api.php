@@ -177,6 +177,48 @@
 				<p class="description"><?php esc_html_e( 'Labels for the three price tiers in the modal (cheapest → most expensive). Defaults: Good / Better / Best.', 'dynamic-storage-units' ); ?></p>
 			</td>
 		</tr>
+		<tr>
+			<th colspan="2"><hr style="border:none;border-top:1px solid #eee;margin:8px 0;"></th>
+		</tr>
+		<tr>
+			<th colspan="2">
+				<h3 style="margin:0 0 4px;"><?php esc_html_e( 'Unit Class Settings', 'dynamic-storage-units' ); ?></h3>
+				<p class="description" style="font-weight:normal;"><?php esc_html_e( 'Separate from Grouped Unit Settings above. Applies when a single unit group contains vacant units in more than one class (Economy / Standard / Premium), for example a 10x20 with both economy and premium units.', 'dynamic-storage-units' ); ?></p>
+			</th>
+		</tr>
+		<tr>
+			<th scope="row"><?php esc_html_e( 'Class Grouping', 'dynamic-storage-units' ); ?></th>
+			<td>
+				<label for="dsu_class_grouping_enabled">
+					<input type="checkbox" id="dsu_class_grouping_enabled" name="<?php echo DSU_OPTION_API; ?>[class_grouping_enabled]"
+					       value="1" <?php checked( ! empty( $settings['class_grouping_enabled'] ) ); ?> />
+					<?php esc_html_e( 'Show a "Choose Your Space" option when a unit group has vacant units in more than one class', 'dynamic-storage-units' ); ?>
+				</label>
+				<p class="description">
+					<?php esc_html_e( 'Global — applies to every unit group in every display. Groups already grouped by shared name keep that behaviour instead; name-based grouping takes precedence. Groups with vacancy in only one class are unaffected and render as normal single cards.', 'dynamic-storage-units' ); ?>
+				</p>
+			</td>
+		</tr>
+		<tr>
+			<th scope="row"><?php esc_html_e( 'Class Labels', 'dynamic-storage-units' ); ?></th>
+			<td>
+				<label for="dsu_economy_label" style="display:inline-block;width:60px;"><?php esc_html_e( 'Economy:', 'dynamic-storage-units' ); ?></label>
+				<input type="text" id="dsu_economy_label" name="<?php echo DSU_OPTION_API; ?>[economy_label]"
+				       value="<?php echo esc_attr( $settings['economy_label'] ?? '' ); ?>"
+				       class="small-text" placeholder="Economy" style="width:100px;" />
+				&nbsp;&nbsp;
+				<label for="dsu_standard_label"><?php esc_html_e( 'Standard:', 'dynamic-storage-units' ); ?></label>
+				<input type="text" id="dsu_standard_label" name="<?php echo DSU_OPTION_API; ?>[standard_label]"
+				       value="<?php echo esc_attr( $settings['standard_label'] ?? '' ); ?>"
+				       class="small-text" placeholder="Standard" style="width:100px;" />
+				&nbsp;&nbsp;
+				<label for="dsu_premium_label"><?php esc_html_e( 'Premium:', 'dynamic-storage-units' ); ?></label>
+				<input type="text" id="dsu_premium_label" name="<?php echo DSU_OPTION_API; ?>[premium_label]"
+				       value="<?php echo esc_attr( $settings['premium_label'] ?? '' ); ?>"
+				       class="small-text" placeholder="Premium" style="width:100px;" />
+				<p class="description"><?php esc_html_e( 'Customer-facing names for the three unit classes reported by the API. Columns are ordered cheapest first, so a class only appears when it has at least one vacant, rentable unit.', 'dynamic-storage-units' ); ?></p>
+			</td>
+		</tr>
 	</table>
 
 	<?php submit_button(); ?>

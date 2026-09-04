@@ -139,6 +139,24 @@
 		return { w: w, d: d, sqft: Math.round(w * d) };
 	}
 
+	// Three comma-separated inputs, one per unit class. Mirrors the PHP-rendered markup
+	// in settings-images.php so a refresh does not lose what the user typed.
+	function classFeatInputs( gid, saved ) {
+		var classes = ['Economy', 'Standard', 'Premium'];
+		var html    = '';
+		saved = saved || {};
+		classes.forEach(function (cls) {
+			var v = saved[cls];
+			if ($.isArray(v)) { v = v.join(', '); }
+			html += '<label class="dsu-class-feat-row">' +
+				'<span>' + cls + '</span>' +
+				'<input type="text" name="dsu_image_mappings[' + escHtml(gid) + '][class_features][' + cls + ']" ' +
+				'value="' + escHtml(v || '') + '" placeholder="e.g. Drive-Up Access" />' +
+				'</label>';
+		});
+		return html;
+	}
+
 	function renderGroupsTable( groups, existingState ) {
 		var $tbody = $('#dsu-groups-tbody');
 		var $wrap  = $('#dsu-groups-table-wrap');
@@ -198,6 +216,7 @@
 					buildUnitTypeOptions(savedType) +
 					'</select>' +
 				'</td>' +
+				'<td class="dsu-col-class-feats">' + classFeatInputs(gid, saved.class_features) + '</td>' +
 				'<td>' +
 					'<button type="button" class="button button-small dsu-select-image">' + strings.selectImage + '</button> ' +
 					'<button type="button" class="button-link dsu-remove-image">Remove</button>' +
@@ -219,8 +238,14 @@
 			var lbl    = $(this).find('input[name*="[label]"]').val() || '';
 			var cat    = $(this).find('.dsu-size-cat-select').val() || '';
 			var utype  = $(this).find('.dsu-unit-type-select').val() || '';
+			// Preserve class features across a Refresh from API, which re-renders every row.
+			var cfeats = {};
+			$(this).find('input[name*="[class_features]["]').each(function () {
+				var m = /\[class_features\]\[([^\]]+)\]/.exec(this.name || '');
+				if (m) { cfeats[m[1]] = $(this).val() || ''; }
+			});
 			if (gid) {
-				map[gid] = { image_url: imgUrl, label: lbl, size_category: cat, unit_type: utype };
+				map[gid] = { image_url: imgUrl, label: lbl, size_category: cat, unit_type: utype, class_features: cfeats };
 			}
 		});
 		return map;

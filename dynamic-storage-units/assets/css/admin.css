@@ -426,3 +426,27 @@
 .dsu-size-cat-select {
 	min-width: 120px;
 }
+
+/* Per-class feature inputs in the Unit Group Mapping table */
+.dsu-col-class-feats {
+	min-width: 240px;
+}
+
+.dsu-class-feat-row {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	margin-bottom: 3px;
+}
+
+.dsu-class-feat-row span {
+	flex: 0 0 62px;
+	font-size: 11px;
+	color: #666;
+}
+
+.dsu-class-feat-row input {
+	flex: 1 1 auto;
+	font-size: 11px;
+	padding: 2px 6px;
+}

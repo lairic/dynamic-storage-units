@@ -126,6 +126,24 @@ class DSU_Shortcode {
 			}
 		}
 
+		// Per-unit data (class + isRentable). Returns [] when the endpoint is unavailable,
+		// which makes every consumer below fail open rather than blanking the display.
+		$class_map = $this->build_unit_class_map( $api, $facility_code );
+
+		// Hide groups with no rentable unit. The v2 unit-groups feed already excludes these
+		// (it only returns groups with >=1 vacant AND rentable unit), so this is a backstop
+		// for facilities where that does not hold. Groups absent from $class_map are kept.
+		$groups_before_rentable = count( $groups );
+		if ( ! empty( $class_map ) ) {
+			$groups = array_values( array_filter( $groups, function ( $g ) use ( $class_map ) {
+				$gid = $g['id'] ?? '';
+				if ( ! isset( $class_map[ $gid ] ) ) {
+					return true;
+				}
+				return ! empty( $class_map[ $gid ]['has_rentable'] );
+			} ) );
+		}
+
 		// Fetch CTA URLs via v2 — these endpoints return an error when rent/reserve is disabled,
 		// which is the correct availability gate. v1 onlineMoveInUrl is always populated.
 		foreach ( $groups as &$group ) {
@@ -146,7 +164,7 @@ class DSU_Shortcode {
 		$groups = $this->apply_sorting( $groups, $config );
 
 		// Build display units (single cards + grouped tier cards)
-		$display_units = $this->build_display_units( $groups, $group_map, $config, $api_settings );
+		$display_units = $this->build_display_units( $groups, $group_map, $class_map, $config, $api_settings );
 
 		// Apply limit to displayed cards
 		$max = isset( $config['max_units'] ) ? absint( $config['max_units'] ) : 0;
@@ -208,7 +226,7 @@ class DSU_Shortcode {
 
 			// ---- FILTER / SORT STATS ----
 			$debug_out .= '<p style="' . $h_style . '">FILTER / SORT / LIMIT</p>';
-			$debug_out .= 'Before filter: <strong>' . $groups_before_filter . '</strong> &nbsp; After filter/sort: <strong>' . count( $groups ) . '</strong> &nbsp; Display cards: <strong>' . count( $display_units ) . '</strong><br>';
+			$debug_out .= 'Groups before rentable gate: <strong>' . $groups_before_rentable . '</strong> &nbsp; Before filter: <strong>' . $groups_before_filter . '</strong> &nbsp; After filter/sort: <strong>' . count( $groups ) . '</strong> &nbsp; Display cards: <strong>' . count( $display_units ) . '</strong><br>';
 			$debug_out .= 'soldout_handling: <code>' . esc_html( $config['soldout_handling'] ?? 'hide' ) . '</code> &nbsp; ';
 			$debug_out .= 'filter_label: <code>' . esc_html( $config['filter_label'] ?? '(none)' ) . '</code> &nbsp; ';
 			$debug_out .= 'filter_has_special: <code>' . esc_html( $config['filter_has_special'] ?? '0' ) . '</code> &nbsp; ';
@@ -238,6 +256,35 @@ class DSU_Shortcode {
 				$debug_out .= '</table>';
 			} else {
 				$debug_out .= '<em>v2 groups unavailable.</em>';
+			}
+
+			// ---- UNIT CLASS BREAKDOWN ----
+			$debug_out .= '<p style="' . $h_style . '">UNIT CLASS BREAKDOWN (vacant + rentable units per class)</p>';
+			$debug_out .= 'class_grouping_enabled: <code>' . ( ! empty( $api_settings['class_grouping_enabled'] ) ? '1' : '0' ) . '</code> &nbsp; ';
+			$debug_out .= 'unit records: <code>' . count( $class_map ) . ' groups</code> &nbsp; ';
+			$debug_out .= 'unit deep-link param: <code>' . esc_html( apply_filters( 'dsu_unit_url_param', defined( 'DSU_UNIT_URL_PARAM' ) ? DSU_UNIT_URL_PARAM : '' ) ?: '(disabled)' ) . '</code>';
+			if ( empty( $class_map ) ) {
+				$debug_out .= '<p><em>No unit-level data — /units returned an error or is outside the scope of this API client. Class grouping and the rentable gate are both inactive.</em></p>';
+			} else {
+				$debug_out .= '<table style="border-collapse:collapse;font-size:11px;width:100%;">';
+				$debug_out .= '<tr style="background:#555;color:#fff;"><th style="' . $td_style . '">Group</th><th style="' . $td_style . '">Rentable?</th><th style="' . $td_style . '">Classes w/ vacancy</th><th style="' . $td_style . '">Would group?</th></tr>';
+				foreach ( ( is_wp_error( $diag_v2_all ) || ! is_array( $diag_v2_all ) ) ? [] : $diag_v2_all as $g2c ) {
+					$cid     = $g2c['id'] ?? '';
+					$centry  = $class_map[ $cid ] ?? null;
+					$cls     = $centry ? ( $centry['classes'] ?? [] ) : [];
+					$cls_txt = [];
+					foreach ( $cls as $cname => $cinfo ) {
+						$cls_txt[] = $cname . ' &times;' . (int) $cinfo['count'] . ' @ $' . number_format( (float) $cinfo['rate'], 2 );
+					}
+					$would = count( $cls ) > 1
+						? '<span style="color:green;font-weight:bold;">yes</span>'
+						: '<span style="color:#888;">no</span>';
+					$rent = $centry
+						? ( ! empty( $centry['has_rentable'] ) ? '<span style="color:green;">&#x2713;</span>' : '<span style="color:red;font-weight:bold;">&#x2717; hidden</span>' )
+						: '<em>no data</em>';
+					$debug_out .= '<tr><td style="' . $td_style . '">' . esc_html( $g2c['label'] ?? '—' ) . '</td><td style="' . $td_style . 'text-align:center;">' . $rent . '</td><td style="' . $td_style . '">' . ( $cls_txt ? implode( ' &nbsp;|&nbsp; ', $cls_txt ) : '<em>none vacant</em>' ) . '</td><td style="' . $td_style . 'text-align:center;">' . $would . '</td></tr>';
+				}
+				$debug_out .= '</table>';
 			}
 
 			// ---- RAW RESPONSE PANELS ----
@@ -275,6 +322,7 @@ class DSU_Shortcode {
 				'generated_at'            => current_time( 'c' ),
 				'endpoint_inventory'      => array_map( fn( $ep ) => [ 'method' => $ep[0], 'path' => $ep[1], 'notes' => $ep[2] ], $endpoints ),
 				'filter_stats'            => [
+					'before_rentable_gate' => $groups_before_rentable,
 					'before_filter'     => $groups_before_filter,
 					'after_filter'      => count( $groups ),
 					'soldout_handling'  => $config['soldout_handling'] ?? 'hide',
@@ -289,6 +337,7 @@ class DSU_Shortcode {
 				'v1_lead_sources'         => is_wp_error( $diag_lead_src )  ? [ 'error' => $diag_lead_src->get_error_message() ]  : $diag_lead_src,
 				'v1_reservation_settings' => is_wp_error( $diag_res_set )   ? [ 'error' => $diag_res_set->get_error_message() ]   : $diag_res_set,
 				'plugin_group_map'        => $group_map,
+				'unit_class_map'          => $class_map,
 				'active_config'           => $config,
 			];
 
@@ -609,7 +658,7 @@ class DSU_Shortcode {
 		return $tiles;
 	}
 
-	private function build_display_units( $groups, $group_map, $config, $api_settings ) {
+	private function build_display_units( $groups, $group_map, $class_map, $config, $api_settings ) {
 		$tier_labels = [
 			sanitize_text_field( $api_settings['good_label']   ?? '' ) ?: 'Good',
 			sanitize_text_field( $api_settings['better_label'] ?? '' ) ?: 'Better',
@@ -618,6 +667,7 @@ class DSU_Shortcode {
 		$tier_classes     = [ 'dsu-tier-col--good', 'dsu-tier-col--better', 'dsu-tier-col--best' ];
 		$grouped_cta      = sanitize_text_field( $api_settings['grouped_cta_text'] ?? '' ) ?: 'Choose Your Space';
 		$soldout_handling = $config['soldout_handling'] ?? 'hide';
+		$class_grouping   = ! empty( $api_settings['class_grouping_enabled'] );
 
 		// Group by v1_name (falls back to v2 label)
 		$buckets = [];
@@ -638,6 +688,33 @@ class DSU_Shortcode {
 				if ( ! $is_avail && $soldout_handling === 'hide' ) {
 					continue;
 				}
+
+				// Class grouping: one unit group holding vacant units in more than one class.
+				// Only reached when the group was not already bundled by name — name-based
+				// grouping takes precedence, and nesting both would exceed three columns.
+				if ( $class_grouping && $is_avail ) {
+					$class_tiers = $this->build_class_tiers( $group, $class_map, $group_map, $api_settings );
+					if ( count( $class_tiers ) > 1 ) {
+						$first = $class_tiers[0];
+						$display_units[] = [
+							'type'            => 'grouped',
+							'name'            => $name,
+							'modal_id'        => 'dsu-class-modal-' . sanitize_title( $name ),
+							'tiers'           => $class_tiers,
+							'tier_labels'     => wp_list_pluck( $class_tiers, '_class_label' ),
+							'tier_classes'    => $tier_classes,
+							'had_overflow'    => false,
+							'from_price'      => (float) ( $first['_special_price'] > 0 ? $first['_special_price'] : $first['_price'] ),
+							'from_is_special' => $first['_special_price'] > 0,
+							'from_regular'    => (float) $first['_price'],
+							'grouped_cta'     => $grouped_cta,
+							'special_banner'  => $this->tiers_shared_special_label( $class_tiers ),
+							'soldout_handling'=> $soldout_handling,
+						];
+						continue;
+					}
+				}
+
 				$display_units[] = [ 'type' => 'single', 'group' => $group ];
 			} else {
 				$had_overflow = count( $bucket ) > 3;
@@ -656,6 +733,20 @@ class DSU_Shortcode {
 				} );
 
 				$tiers    = array_slice( $bucket, 0, 3 );
+
+				// Normalise each tier onto the same keys the class tiers use, so the modal
+				// template reads one shape regardless of which grouping produced it.
+				foreach ( $tiers as &$t_norm ) {
+					$tid              = $t_norm['id'] ?? '';
+					$twp              = $group_map[ $tid ] ?? [];
+					$t_norm['_price']         = (float) ( $twp['v1_price'] ?? $t_norm['streetRate'] ?? 0 );
+					$t_norm['_special_price'] = (float) ( $twp['v1_special_price'] ?? 0 );
+					$t_norm['_special_label'] = (string) ( $twp['v1_special_label'] ?? '' );
+					$t_norm['_display_name']  = ( $twp['v1_name'] ?? '' ) ?: ( $t_norm['label'] ?? '' );
+					$t_norm['_features']      = is_array( $twp['features'] ?? null ) ? $twp['features'] : [];
+				}
+				unset( $t_norm );
+
 				$has_any  = false;
 				foreach ( $tiers as $t ) {
 					if ( (int) ( $t['availableTotal'] ?? 0 ) > 0 ) {
@@ -707,12 +798,221 @@ class DSU_Shortcode {
 					'from_is_special' => $from_is_special,
 					'from_regular'    => $from_regular,
 					'grouped_cta'     => $grouped_cta,
+					'special_banner'  => $this->tiers_shared_special_label( $tiers ),
 					'soldout_handling'=> $soldout_handling,
 				];
 			}
 		}
 
 		return $display_units;
+	}
+
+	/**
+	 * Build per-group unit data from the v2 /units endpoint — the only place the API exposes
+	 * attributes.class and the per-unit isRentable flag.
+	 *
+	 * Returns [ groupId => [ 'has_rentable' => bool, 'classes' => [ class => [...] ] ] ].
+	 * Only vacant, rentable, undamaged units are counted into 'classes'; 'has_rentable' also
+	 * counts occupied ones, since a fully-rented group is still rentable, just not right now.
+	 * Returns [] on any API error so callers fail open.
+	 */
+	private function build_unit_class_map( $api, $facility_code ) {
+		$units = $api->get_units( $facility_code );
+		if ( is_wp_error( $units ) || empty( $units ) || ! is_array( $units ) ) {
+			return [];
+		}
+
+		$map = [];
+		foreach ( $units as $unit ) {
+			// Units join to unit groups on unitType.id — the unit-group endpoints take this
+			// same value as their {unitTypeId} path parameter.
+			$gid = $unit['unitType']['id'] ?? '';
+			if ( empty( $gid ) ) {
+				continue;
+			}
+
+			if ( ! isset( $map[ $gid ] ) ) {
+				$map[ $gid ] = [ 'has_rentable' => false, 'classes' => [] ];
+			}
+
+			$rentable = ! empty( $unit['isRentable'] ) && ! empty( $unit['isActive'] ) && empty( $unit['isDamaged'] );
+			if ( $rentable ) {
+				$map[ $gid ]['has_rentable'] = true;
+			}
+
+			if ( ! $rentable || ( $unit['availabilityStatus'] ?? '' ) !== 'Vacant' ) {
+				continue;
+			}
+
+			$class = sanitize_text_field( (string) ( $unit['attributes']['class'] ?? '' ) );
+			if ( $class === '' ) {
+				continue;
+			}
+
+			// webRate is the online rate; it matches streetRate unless the facility prices
+			// its online channel separately.
+			$rate = (float) ( $unit['webRate'] ?? $unit['streetRate'] ?? 0 );
+
+			if ( ! isset( $map[ $gid ]['classes'][ $class ] ) ) {
+				$map[ $gid ]['classes'][ $class ] = [ 'count' => 0, 'rate' => 0.0, 'unit_id' => '', 'unit_number' => '', 'special_ids' => [] ];
+			}
+
+			$map[ $gid ]['classes'][ $class ]['count']++;
+
+			// Track the cheapest unit in the class — that is the rate the class is advertised
+			// at, and the unit a per-unit deep link should point to.
+			if ( $rate > 0 && ( $map[ $gid ]['classes'][ $class ]['rate'] <= 0 || $rate < $map[ $gid ]['classes'][ $class ]['rate'] ) ) {
+				$map[ $gid ]['classes'][ $class ]['rate']        = $rate;
+				$map[ $gid ]['classes'][ $class ]['unit_id']     = sanitize_text_field( (string) ( $unit['id'] ?? '' ) );
+				$map[ $gid ]['classes'][ $class ]['unit_number'] = sanitize_text_field( (string) ( $unit['number'] ?? '' ) );
+
+				// Specials are attached per unit. Recording them for the unit we link to means
+				// the price shown is the price that unit actually gets.
+				$sids = [];
+				foreach ( (array) ( $unit['specials'] ?? [] ) as $sp ) {
+					$sid = sanitize_text_field( (string) ( $sp['id'] ?? '' ) );
+					if ( $sid !== '' ) {
+						$sids[] = $sid;
+					}
+				}
+				$map[ $gid ]['classes'][ $class ]['special_ids'] = $sids;
+			}
+		}
+
+		return $map;
+	}
+
+	/**
+	 * Build tier columns for a single unit group holding vacant units in more than one class.
+	 * Returns [] when fewer than two classes have vacancy, so the caller falls back to a normal
+	 * single card. Shaped to match the name-based tiers the modal already renders.
+	 */
+	private function build_class_tiers( $group, $class_map, $group_map, $api_settings ) {
+		$gid     = $group['id'] ?? '';
+		$classes = $class_map[ $gid ]['classes'] ?? [];
+		if ( count( $classes ) < 2 ) {
+			return [];
+		}
+
+		$labels = [
+			'Economy'  => sanitize_text_field( $api_settings['economy_label']  ?? '' ) ?: 'Economy',
+			'Standard' => sanitize_text_field( $api_settings['standard_label'] ?? '' ) ?: 'Standard',
+			'Premium'  => sanitize_text_field( $api_settings['premium_label']  ?? '' ) ?: 'Premium',
+		];
+		// Tie-break order when two classes carry the same price.
+		$rank = [ 'Economy' => 0, 'Standard' => 1, 'Premium' => 2 ];
+
+		$wp            = $group_map[ $gid ] ?? [];
+		$group_rate    = (float) ( $wp['v1_price']          ?? $group['streetRate'] ?? 0 );
+		$special_price = (float) ( $wp['v1_special_price']  ?? 0 );
+		$special_label = (string) ( $wp['v1_special_label'] ?? '' );
+		$special_id    = (string) ( $wp['v1_special_id']    ?? '' );
+		$base_features = is_array( $wp['features'] ?? null ) ? $wp['features'] : [];
+		$class_extra   = is_array( $wp['class_features'] ?? null ) ? $wp['class_features'] : [];
+
+		// The API prices a special against the group rate only. Every special this API returns
+		// is a percentage discount, so the same ratio carries to the dearer classes: a 50% off
+		// special is 135 on a 270 unit and 152.50 on a 305 one.
+		$ratio = ( $group_rate > 0 && $special_price > 0 ) ? ( $special_price / $group_rate ) : 0.0;
+
+		$tiers = [];
+		foreach ( $classes as $class => $info ) {
+			$rate = (float) $info['rate'];
+			if ( $rate <= 0 ) {
+				$rate = $group_rate;
+			}
+
+			// Whether this class gets the special is decided by the unit we deep-link to:
+			// its specials[] either carries the group special id or it does not. Falls back to
+			// matching on rate when the id is unavailable.
+			if ( $special_id !== '' && $ratio > 0 && $ratio < 1 ) {
+				$special_applies = in_array( $special_id, (array) ( $info['special_ids'] ?? [] ), true );
+				$class_special   = $special_applies ? round( $rate * $ratio, 2 ) : 0.0;
+			} else {
+				$special_applies = $special_price > 0 && abs( $rate - $group_rate ) < 0.01;
+				$class_special   = $special_applies ? $special_price : 0.0;
+			}
+
+			$feats = array_merge( $base_features, (array) ( $class_extra[ $class ] ?? [] ) );
+
+			$tiers[] = [
+				'id'               => $gid,
+				'label'            => $group['label'] ?? '',
+				'availableTotal'   => (int) $info['count'],
+				'availableSpecial' => $special_applies ? ( $group['availableSpecial'] ?? null ) : null,
+				'_move_in_url'     => $this->class_cta_url( $group['_move_in_url'] ?? '', $info, $special_applies ),
+				'_reserve_url'     => $this->class_cta_url( $group['_reserve_url'] ?? '', $info, $special_applies ),
+				'_price'           => $rate,
+				'_special_price'   => $class_special,
+				'_special_label'   => $special_applies ? $special_label : '',
+				'_features'        => array_values( array_unique( $feats ) ),
+				'_display_name'    => ( $wp['v1_name'] ?? '' ) ?: ( $group['label'] ?? '' ),
+				'_class_label'     => $labels[ $class ] ?? $class,
+				'_class'           => $class,
+			];
+		}
+
+		usort( $tiers, function ( $a, $b ) use ( $rank ) {
+			$ae = $a['_special_price'] > 0 ? $a['_special_price'] : $a['_price'];
+			$be = $b['_special_price'] > 0 ? $b['_special_price'] : $b['_price'];
+			if ( abs( $ae - $be ) > 0.001 ) {
+				return $ae <=> $be;
+			}
+			return ( $rank[ $a['_class'] ] ?? 99 ) <=> ( $rank[ $b['_class'] ] ?? 99 );
+		} );
+
+		// Three columns is what the tier modal's CSS grid is built for.
+		return array_slice( $tiers, 0, 3 );
+	}
+
+	/**
+	 * When every column carries the same special, the modal shows it once as a banner
+	 * instead of repeating the callout box in each column. Returns the label, or ''.
+	 */
+	private function tiers_shared_special_label( $tiers ) {
+		$labels = [];
+		foreach ( $tiers as $t ) {
+			if ( (float) ( $t['_special_price'] ?? 0 ) <= 0 ) {
+				return '';
+			}
+			$labels[ (string) ( $t['_special_label'] ?? '' ) ] = true;
+		}
+		if ( count( $labels ) !== 1 ) {
+			return '';
+		}
+		$label = key( $labels );
+		return $label !== '' ? $label : '';
+	}
+
+	/**
+	 * Adapt a group-level CTA URL for one class column.
+	 */
+	private function class_cta_url( $url, $class_info, $special_applies ) {
+		if ( empty( $url ) ) {
+			return '';
+		}
+
+		// The group deep link carries that group's own price and specialId. For a class which
+		// does not qualify, leaving them on would quote a price the customer cannot get, so
+		// drop them and let the portal price the unit itself.
+		if ( ! $special_applies ) {
+			$url = remove_query_arg( [ 'price', 'specialId' ], $url );
+		}
+
+		// Preselect the specific unit. 'unitId' + the unit UUID is undocumented but confirmed
+		// working against the live portal; 'unitNumber' was tested and is ignored by it.
+		// Define DSU_UNIT_URL_PARAM as '' (or filter it) to fall back to group-level links.
+		$param = apply_filters( 'dsu_unit_url_param', defined( 'DSU_UNIT_URL_PARAM' ) ? DSU_UNIT_URL_PARAM : '' );
+		if ( ! empty( $param ) ) {
+			$value = ( $param === 'unitNumber' )
+				? ( $class_info['unit_number'] ?? '' )
+				: ( $class_info['unit_id'] ?? '' );
+			if ( $value !== '' ) {
+				$url = add_query_arg( $param, $value, $url );
+			}
+		}
+
+		return esc_url_raw( $url );
 	}
 
 	/**
@@ -808,6 +1108,7 @@ class DSU_Shortcode {
 			$v1_special         = $group['availableSpecial'] ?? null;
 			$v1_special_price   = is_array( $v1_special ) ? (float) ( $v1_special['specialPrice'] ?? 0 ) : 0;
 			$v1_special_label   = is_array( $v1_special ) ? sanitize_text_field( $v1_special['specialLabel'] ?? '' ) : '';
+			$v1_special_id      = is_array( $v1_special ) ? sanitize_text_field( $v1_special['specialId'] ?? '' ) : '';
 			$online_move_in_url = esc_url_raw( $group['onlineMoveInUrl'] ?? '' );
 
 			$data_map[ $gid ] = [
@@ -823,6 +1124,7 @@ class DSU_Shortcode {
 				'v1_price'           => $v1_price,
 				'v1_special_price'   => $v1_special_price,
 				'v1_special_label'   => $v1_special_label,
+				'v1_special_id'      => $v1_special_id,
 			];
 		}
 

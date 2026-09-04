@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Dynamic Storage Units
  * Description: API-driven storage unit listings with WordPress controlled presentation brought to you by Metric Moose.
- * Version: 2.6.6
+ * Version: 2.7.1
  * Author: Metric Moose
  * Author URI: https://metricmoose.com
  * Text Domain: dynamic-storage-units
@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'DSU_VERSION', '2.6.6' );
+define( 'DSU_VERSION', '2.7.1' );
 define( 'DSU_LICENSE_SERVER', 'https://dsu-license-server.vercel.app' );
 define( 'DSU_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'DSU_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
@@ -25,6 +25,17 @@ define( 'DSU_OPTION_FEATURE_ICONS', 'dsu_feature_icons' );
 define( 'DSU_OPTION_UNIT_TYPES',    'dsu_unit_types' );
 define( 'DSU_OPTION_DEFAULT_CONFIG','dsu_default_config' );
 define( 'DSU_OPTION_SOURCE_MAP',    'dsu_source_map' );
+
+/**
+ * Query parameter the QuikStor tenant portal uses to preselect a single unit on a move-in
+ * link. Undocumented — QuikStor publishes only unitGroupId / price / specialId / leadSourceId
+ * — but 'unitId' carrying the unit UUID was confirmed working against the live portal on
+ * 2026-09-03. 'unitNumber' (the human unit number, e.g. "78") was tested and does NOT work.
+ * Set to '' to disable per-unit links; every class option then falls back to the group link.
+ */
+if ( ! defined( 'DSU_UNIT_URL_PARAM' ) ) {
+	define( 'DSU_UNIT_URL_PARAM', 'unitId' );
+}
 
 function dsu_get_size_categories() {
 	$cats = get_option( DSU_OPTION_CATEGORIES, null );

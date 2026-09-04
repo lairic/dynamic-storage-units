@@ -74,6 +74,34 @@ class DSU_API {
 	}
 
 	/**
+	 * GET /api/v2/companies/{companyCode}/facilities/{facilityCode}/units
+	 * Per-unit records — the only endpoint exposing attributes.class (Standard/Economy/Premium)
+	 * and the per-unit isRentable flag. Neither is available on either unit-groups endpoint.
+	 */
+	public function get_units( $facility_code ) {
+		$cached = DSU_Cache::get_units( $this->company_code, $facility_code );
+		if ( false !== $cached ) {
+			return $cached;
+		}
+
+		$path     = $this->facility_path( $facility_code ) . '/units';
+		$response = $this->request( $path, [ 'Page' => '0', 'Size' => '9999' ] );
+
+		if ( is_wp_error( $response ) ) {
+			return $response;
+		}
+
+		$units = $response['results'] ?? $response;
+		if ( ! is_array( $units ) ) {
+			$units = [];
+		}
+
+		DSU_Cache::set_units( $this->company_code, $facility_code, $units );
+
+		return $units;
+	}
+
+	/**
 	 * GET /api/v2/companies/{companyCode}/facilities/{facilityCode}/unit-groups/{groupId}/move-in-url
 	 */
 	public function get_move_in_url( $facility_code, $group_id ) {

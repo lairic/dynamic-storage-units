@@ -181,12 +181,42 @@ class DSU_Admin {
 			'good_label'               => sanitize_text_field( $input['good_label']       ?? '' ),
 			'better_label'             => sanitize_text_field( $input['better_label']     ?? '' ),
 			'best_label'               => sanitize_text_field( $input['best_label']       ?? '' ),
+			'class_grouping_enabled'   => ! empty( $input['class_grouping_enabled'] ) ? '1' : '',
+			'economy_label'            => sanitize_text_field( $input['economy_label']  ?? '' ),
+			'standard_label'           => sanitize_text_field( $input['standard_label'] ?? '' ),
+			'premium_label'            => sanitize_text_field( $input['premium_label']  ?? '' ),
 		];
 	}
 
 	/**
 	 * Stores: { "group-uuid": { "label": "...", "image_url": "...", "features": [...] } }
 	 */
+	/**
+	 * Extra per-class feature tiles, entered in the admin as a comma-separated list.
+	 * Shape: [ 'Economy' => [ 'Roll-Up Door', ... ], 'Standard' => [...], 'Premium' => [...] ].
+	 */
+	private function sanitize_class_features( $input ) {
+		$allowed = [ 'Economy', 'Standard', 'Premium' ];
+		$clean   = [];
+		foreach ( $allowed as $class ) {
+			$raw = $input[ $class ] ?? '';
+			if ( is_array( $raw ) ) {
+				$raw = implode( ',', $raw );
+			}
+			$feats = [];
+			foreach ( explode( ',', (string) $raw ) as $feat ) {
+				$feat = sanitize_text_field( trim( $feat ) );
+				if ( $feat !== '' && ! in_array( $feat, $feats, true ) ) {
+					$feats[] = $feat;
+				}
+			}
+			if ( $feats ) {
+				$clean[ $class ] = $feats;
+			}
+		}
+		return $clean;
+	}
+
 	public function sanitize_group_mappings( $input ) {
 		if ( ! is_array( $input ) ) {
 			return [];
@@ -202,6 +232,7 @@ class DSU_Admin {
 				'image_url'     => esc_url_raw( $data['image_url'] ?? '' ),
 				'size_category' => sanitize_key( $data['size_category'] ?? '' ),
 				'unit_type'     => sanitize_key( $data['unit_type'] ?? '' ),
+				'class_features'=> $this->sanitize_class_features( $data['class_features'] ?? [] ),
 			];
 		}
 		return $clean;

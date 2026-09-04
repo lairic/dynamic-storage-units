@@ -1,6 +1,6 @@
 <?php if ( ! defined( 'ABSPATH' ) ) exit; ?>
 <?php
-// Variables: $modal_id, $name, $tiers, $tier_labels, $tier_classes, $had_overflow
+// Variables: $modal_id, $name, $tiers, $tier_labels, $tier_classes, $had_overflow, $special_banner
 // From outer scope: $soldout_handling, $config_name, $facility_code, $group_map
 ?>
 <div id="<?php echo esc_attr( $modal_id ); ?>"
@@ -19,6 +19,11 @@
 			<p class="dsu-tier-modal-subtitle">
 				<?php esc_html_e( 'Compare options and choose the right fit for you.', 'dynamic-storage-units' ); ?>
 			</p>
+			<?php if ( ! empty( $special_banner ) ) : ?>
+				<div class="dsu-tier-modal-special">
+					&#11088; <?php echo esc_html( $special_banner ); ?>
+				</div>
+			<?php endif; ?>
 			<button type="button"
 			        class="dsu-tier-modal-close dsu-close-tier-modal"
 			        aria-label="<?php esc_attr_e( 'Close', 'dynamic-storage-units' ); ?>">
@@ -34,10 +39,12 @@
 				$depth       = (float) ( $wp_data['depth']  ?? 0 );
 				$height      = (float) ( $wp_data['height'] ?? 0 );
 				$sqft        = (float) ( $wp_data['sqft']   ?? 0 );
-				$features    = $wp_data['features'] ?? [];
-				$v1_price    = (float) ( $wp_data['v1_price']         ?? $tier['streetRate'] ?? 0 );
-				$v1_sp_price = (float) ( $wp_data['v1_special_price'] ?? 0 );
-				$v1_sp_label = $wp_data['v1_special_label'] ?? '';
+				$features    = $tier['_features'] ?? $wp_data['features'] ?? [];
+				// Per-tier keys are set by build_display_units for both grouping modes. Class
+				// tiers share one group id, so their price must come from the tier, not the map.
+				$v1_price    = (float) ( $tier['_price']         ?? $wp_data['v1_price']         ?? $tier['streetRate'] ?? 0 );
+				$v1_sp_price = (float) ( $tier['_special_price'] ?? $wp_data['v1_special_price'] ?? 0 );
+				$v1_sp_label = $tier['_special_label'] ?? $wp_data['v1_special_label'] ?? '';
 				$avail_total = (int) ( $tier['availableTotal'] ?? 0 );
 				$is_avail    = $avail_total > 0;
 				$move_in_url = $tier['_move_in_url'] ?? '';
@@ -48,8 +55,11 @@
 
 				$tier_label = $tier_labels[ $i ] ?? '';
 				$tier_class = $tier_classes[ $i ] ?? '';
-				// Use the customer-facing v1 name, then v2 label, then outer group name
-				$display_name = ( $wp_data['v1_name'] ?? '' ) ?: ( $tier['label'] ?? '' ) ?: $name;
+				// Class tiers carry their class label here; name-based tiers carry the v1 name.
+				$display_name = ( $tier['_display_name'] ?? '' ) ?: ( $wp_data['v1_name'] ?? '' ) ?: ( $tier['label'] ?? '' ) ?: $name;
+				// Class columns share one heading, so the tier label is what tells them apart
+				// in a screen reader's list of links.
+				$aria_name    = trim( $tier_label . ' ' . $display_name );
 			?>
 			<div class="dsu-tier-col <?php echo esc_attr( $tier_class ); ?><?php echo ! $is_avail ? ' dsu-tier-col--soldout' : ''; ?>">
 
@@ -84,7 +94,7 @@
 						<div class="dsu-pricing-soldout"><?php esc_html_e( 'Sold Out', 'dynamic-storage-units' ); ?></div>
 					<?php elseif ( $has_discount ) : ?>
 						<div class="dsu-online-rate-label"><?php esc_html_e( 'Online Only Rate', 'dynamic-storage-units' ); ?></div>
-						<?php if ( $v1_sp_label ) : ?>
+						<?php if ( $v1_sp_label && empty( $special_banner ) ) : ?>
 							<div class="dsu-special-callout">&#11088; <?php echo esc_html( $v1_sp_label ); ?></div>
 						<?php endif; ?>
 						<div class="dsu-street-rate-strike">
@@ -105,14 +115,14 @@
 						<?php if ( $move_in_url ) : ?>
 							<a href="<?php echo esc_url( $move_in_url ); ?>"
 							   class="dsu-btn dsu-btn-primary" rel="noopener"
-							   aria-label="<?php echo esc_attr( sprintf( __( 'Rent Online – %s', 'dynamic-storage-units' ), $display_name ) ); ?>">
+							   aria-label="<?php echo esc_attr( sprintf( __( 'Rent Online – %s', 'dynamic-storage-units' ), $aria_name ) ); ?>">
 								<?php esc_html_e( 'Rent Online', 'dynamic-storage-units' ); ?>
 							</a>
 						<?php endif; ?>
 						<?php if ( $reserve_url ) : ?>
 							<a href="<?php echo esc_url( $reserve_url ); ?>"
 							   class="dsu-btn dsu-btn-secondary" rel="noopener"
-							   aria-label="<?php echo esc_attr( sprintf( __( 'Reserve – %s', 'dynamic-storage-units' ), $display_name ) ); ?>">
+							   aria-label="<?php echo esc_attr( sprintf( __( 'Reserve – %s', 'dynamic-storage-units' ), $aria_name ) ); ?>">
 								<?php esc_html_e( 'Reserve', 'dynamic-storage-units' ); ?>
 							</a>
 						<?php endif; ?>

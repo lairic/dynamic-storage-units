@@ -991,6 +991,19 @@
 	font-size: 0.9em;
 }
 
+/* Shown once above the columns when every class carries the same special. */
+.dsu-tier-modal-special {
+	margin: 12px 0 0;
+	background: #fffbea;
+	border: 1px solid #f5d000;
+	border-radius: 6px;
+	padding: 10px 14px;
+	font-size: 1.05em;
+	font-weight: 700;
+	color: #7a5800;
+	text-align: center;
+}
+
 .dsu-tier-modal-close {
 	position: absolute;
 	top: 18px;
