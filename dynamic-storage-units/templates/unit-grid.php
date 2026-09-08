@@ -41,7 +41,7 @@ $tier_modals   = [];
 
 			$wp_data       = $group_map[ $group_id ] ?? [];
 			// v1 `name` is the customer-facing display label; v2 `label` is the backend unit type
-			$label         = $wp_data['v1_name'] ?: ( $group['label'] ?? '' );
+			$label         = ( $wp_data['v1_name'] ?? '' ) ?: ( $group['label'] ?? '' );
 			$unit_type     = $wp_data['unit_type'] ?? '';
 			$image_url     = $wp_data['image_url'] ?? '';
 			$features      = $wp_data['features'] ?? [];

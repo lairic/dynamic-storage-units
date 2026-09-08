@@ -126,6 +126,20 @@ class DSU_Shortcode {
 			}
 		}
 
+		// v2 returns TWO specials per group: availableSpecial is the IN-STORE offer and
+		// availableWebSpecial is the one a customer can actually claim online. This is a public
+		// website, so the online one is the only valid source — the in-store offer (a Referral
+		// Discount, say) advertises a rate nobody can get through the site, and where no online
+		// special exists the in-store one was being shown in its place. Collapse to the online
+		// special up front so every downstream consumer — promo bar, cards, category tiles,
+		// the has-special filter — reads the right one. v1 availableSpecial is already the
+		// online special, which is why v1-sourced prices were correct while these were not.
+		foreach ( $groups as &$group ) {
+			$web = $group['availableWebSpecial'] ?? null;
+			$group['availableSpecial'] = ( is_array( $web ) && ! empty( $web ) ) ? $web : null;
+		}
+		unset( $group );
+
 		// Per-unit data (class + isRentable). Returns [] when the endpoint is unavailable,
 		// which makes every consumer below fail open rather than blanking the display.
 		$class_map = $this->build_unit_class_map( $api, $facility_code );
